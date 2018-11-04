@@ -1,5 +1,5 @@
 terraform {
-  required_version = "> 0.9.7"
+  required_version = ">= 0.11.10"
 
   backend "s3" {
     bucket         = "hyperbola-terraform-state"
@@ -10,7 +10,7 @@ terraform {
   }
 }
 
-resource "aws_s3_bucket" "website" {
+resource "aws_s3_bucket" "www" {
   bucket = "www.frklft.tires"
   acl    = "public-read"
 
@@ -33,20 +33,15 @@ EOF
   }
 }
 
-provider "aws" {
-  region = "us-east-1"
-  alias  = "cloudfront-acm-region"
-}
-
-data "aws_acm_certificate" "website" {
-  provider = "aws.cloudfront-acm-region"
+data "aws_acm_certificate" "www" {
+  provider = "aws.cloudfront_acm"
   domain   = "www.frklft.tires"
   statuses = ["ISSUED"]
 }
 
-resource "aws_cloudfront_distribution" "website" {
+resource "aws_cloudfront_distribution" "www" {
   origin {
-    domain_name = "${aws_s3_bucket.website.website_endpoint}"
+    domain_name = "${aws_s3_bucket.www.website_endpoint}"
     origin_id   = "s3-website"
 
     custom_origin_config {
@@ -91,17 +86,17 @@ resource "aws_cloudfront_distribution" "website" {
   }
 
   tags {
-    Environment = "wr-prod"
+    Environment = "frklft-prod"
   }
 
   viewer_certificate {
-    acm_certificate_arn      = "${data.aws_acm_certificate.website.arn}"
+    acm_certificate_arn      = "${data.aws_acm_certificate.www.arn}"
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2018"
   }
 }
 
-resource "aws_s3_bucket" "website-no-www" {
+resource "aws_s3_bucket" "naked" {
   bucket = "frklft.tires"
   acl    = "public-read"
 
@@ -110,15 +105,15 @@ resource "aws_s3_bucket" "website-no-www" {
   }
 }
 
-data "aws_acm_certificate" "website-no-www" {
-  provider = "aws.cloudfront-acm-region"
+data "aws_acm_certificate" "naked" {
+  provider = "aws.cloudfront_acm"
   domain   = "www.frklft.tires"
   statuses = ["ISSUED"]
 }
 
-resource "aws_cloudfront_distribution" "website-no-www" {
+resource "aws_cloudfront_distribution" "naked" {
   origin {
-    domain_name = "${aws_s3_bucket.website-no-www.website_endpoint}"
+    domain_name = "${aws_s3_bucket.naked.website_endpoint}"
     origin_id   = "s3-website"
 
     custom_origin_config {
@@ -163,11 +158,11 @@ resource "aws_cloudfront_distribution" "website-no-www" {
   }
 
   tags {
-    Environment = "wr-prod"
+    Environment = "frklft-prod"
   }
 
   viewer_certificate {
-    acm_certificate_arn      = "${data.aws_acm_certificate.website-no-www.arn}"
+    acm_certificate_arn      = "${data.aws_acm_certificate.naked.arn}"
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2018"
   }

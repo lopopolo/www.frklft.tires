@@ -3,5 +3,11 @@ variable "region" {
 }
 
 provider "aws" {
-  region = "${var.region}"
+  region  = "${var.region}"
+  version = "~> 1.42"
+}
+
+provider "aws" {
+  region = "us-east-1"
+  alias  = "cloudfront_acm"
 }

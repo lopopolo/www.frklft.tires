@@ -1,7 +1,7 @@
 variable "contact_email" {}
 variable "recaptcha_secret_key" {}
 
-data "template_file" "cloudformation-body" {
+data "template_file" "contact_cloudformation_yaml" {
   template = "$${before}$${lambda_code}$${after}"
 
   vars {
@@ -29,7 +29,7 @@ data "template_file" "cloudformation-body" {
   }
 }
 
-resource "aws_cloudformation_stack" "contact-form" {
+resource "aws_cloudformation_stack" "contact" {
   name         = "FRKLFT-Contact-Us"
   capabilities = ["CAPABILITY_IAM"]
 
@@ -38,9 +38,9 @@ resource "aws_cloudformation_stack" "contact-form" {
     ReCaptchaSecret = "${var.recaptcha_secret_key}"
   }
 
-  template_body = "${data.template_file.cloudformation-body.rendered}"
+  template_body = "${data.template_file.contact_cloudformation_yaml.rendered}"
 }
 
 output "contact_api_url" {
-  value = "${aws_cloudformation_stack.contact-form.outputs["ApiUrl"]}"
+  value = "${aws_cloudformation_stack.contact.outputs["ApiUrl"]}"
 }
