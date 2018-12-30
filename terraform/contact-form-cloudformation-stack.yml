@@ -103,7 +103,7 @@ Resources:
         Variables:
           RECAPTCHA_SECRET_KEY: !Sub ${ReCaptchaSecret}
           SNS_TOPIC: !Sub ${ContactUsSNSTopic}
-      Runtime: nodejs6.10
+      Runtime: nodejs8.10
 
   #
   # Create the API Gateway
